@@ -1,91 +1,125 @@
 (() => {
+    const canvasContainer = document.getElementById("canvas");
+    if (!canvasContainer) return;
 
-  const controlsUi = () => {
-    ctx.fillStyle = "white";
-    ctx.font = "20px Arial";
-    ctx.fillText("Controls", 10, 40);
-    ctx.font = "15px Arial";
-    ctx.fillText("You Can Control the player with arrow keys", 10, 65);
-  }
+    const ctx = canvasContainer.getContext("2d");
+    if (!ctx) return;
 
-  // canvas setup
-  const canvasContainer = document.getElementById("canvas")
-  let ctx = canvasContainer.getContext("2d");
-  const bgImage = new Image()
-  bgImage.src = './background.png';
+    // canvas dimentions
+    canvasContainer.width = window.innerWidth;
+    canvasContainer.height = window.innerHeight
 
-  bgImage.onload = () => {
-    ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+    // Game state
+    let positionX = 400;
+    let positionY = 400;
+    const size = 50;
 
-    // After the background is drawn, you can draw other content on top
-    ctx.fillStyle = "white";
-    controlsUi()
+    // Load images
+    const bgImage = new Image();
+    bgImage.src = './background.png';
 
-    ctx.fillStyle = "red";
-    ctx.fillRect(positionX, positionY, size, size);
+    const playerImage = new Image();
+    playerImage.src = './red.png';
 
-    const image = document.getElementById("player");
+    const playerImageLeft = new Image();
+    playerImageLeft.src = './leftRed.png';
 
-    image.addEventListener("load", (e) => {
-      ctx.drawImage(image, 10, 60, 80, 80);
-    });
+    // UI functions
+    const controlsUi = () => {
+        ctx.fillStyle = "white";
+        ctx.font = "20px Arial";
+        ctx.fillText("Controls", 10, 40);
+        ctx.font = "15px Arial";
+        ctx.fillText("You Can Control the player with arrow keys", 10, 65);
+    };
 
-    function handleUp() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      positionY -= 20;
-      ctx.fillRect(positionX, positionY, size, size);
-      controlsUi()
-    }
+    const drawPlayer = () => {
+            ctx.drawImage(playerImage, positionX, positionY, size, size);
+    };
 
-    function handleDown() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      positionY += 20;
-      ctx.fillRect(positionX, positionY, size, size);
-      controlsUi()
-    }
+    const drawPlayerLeft = () => {
+            ctx.drawImage(playerImage, positionX, positionY, size, size);
+    };
 
-    function handleLeft() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      positionX -= 20;
-      ctx.fillRect(positionX, positionY, size, size);
-      controlsUi()
-    }
+    const drawBackground = () => {
+        ctx.drawImage(bgImage, 0, 0, canvasContainer.width, canvasContainer.height);
+    };
 
-    function handleRight() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      positionX += 20;
-      ctx.fillRect(positionX, positionY, size, size);
-      controlsUi()
-    }
+    // used to clear the canvas and drawing ui
+    const redrawScene = () => {
+        // used to clean canvas
+        ctx.clearRect(0, 0, canvasContainer.width, canvasContainer.height);
 
+        drawBackground();
+        controlsUi();
+        drawPlayer();
+    };
+
+    let steps = 50;
+
+    const handleUp = () => {
+        positionY = positionY - steps;
+        redrawScene();
+    };
+
+    const handleDown = () => {
+        positionY = positionY + steps;
+        redrawScene();
+    };
+
+    const handleLeft = () => {
+        positionX = positionX - steps;
+        redrawScene();
+    };
+
+    const handleRight = () => {
+        positionX = positionX + steps;
+        redrawScene();
+    };
+
+    // keyboard input
     const handleKeyPress = (event) => {
-      let key = event.key
-      if (key === "ArrowUp") {
-        handleUp()
-      }
-      if (key === "ArrowDown") {
-        handleDown()
-      }
+        switch(event.key) {
+            case "ArrowUp":
+                handleUp();
+                break;
+            case "ArrowDown":
+                handleDown();
+                break;
+            case "ArrowLeft":
+                handleLeft();
+                break;
+            case "ArrowRight":
+                handleRight();
+                break;
+        }
+    };
 
-      if (key === "ArrowLeft") {
-        handleLeft()
-      }
-      if (key === "ArrowRight") {
-        handleRight()
-      }
-    }
+    const init = () => {
+        // Set up event listeners
+        document.addEventListener("keydown", handleKeyPress);
 
-    document.addEventListener("keydown", handleKeyPress)
-  };
-  canvasContainer.width = window.innerWidth
-  canvasContainer.height = window.innerHeight - 50
+        // Handle image loading
+        const imagesLoaded = () => {
+            redrawScene();
+        };
 
-  let positionX = 100
-  let positionY = 100
-  let size = 20;
+        let imagesToLoad = 2;
+        const checkImagesLoaded = () => {
+            imagesToLoad--;
+            if (imagesToLoad === 0) {
+                imagesLoaded();
+            }
+        };
 
-  // if no canvas container for 2d return
+        bgImage.onload = checkImagesLoaded;
+        playerImage.onload = checkImagesLoaded;
 
-  if (!ctx) return
+        // If images are already loaded
+        if (bgImage.complete && playerImage.complete) {
+            redrawScene();
+        }
+    };
 
-})()
+    init();
+})();
